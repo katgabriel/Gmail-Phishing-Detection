@@ -1,5 +1,10 @@
+import gmail as gm
+
+
 class EmailConnection:
 
     def __init__(self):
-        self.connection = input("Enter your email: ")
+        email_handle = input("Enter your email: ")
+        gmail = gm.GMail()
+
 
