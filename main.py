@@ -5,14 +5,13 @@ import AccountCredentials
 
 
 def main():
-    email_creds = AccountCredentials.AccountCredentials()
+    email_creds = AccountCredentials.AccountCredentials().get_creds()
 
     try:
         # Call the Gmail API
-        service = build("gmail", "v1", credentials=email_creds.get_creds())
-        results = service.users().labels().list(userId="me").execute()
-        inbox_messages = service.users().messages().list(userId="me", includeSpamTrash=True, labelIds="Inbox")
-        print(type(inbox_messages))
+        service = build("gmail", "v1", credentials=email_creds)
+        results = service.users().messages().list(userId="me", includeSpamTrash=True, labelIds="INBOX").execute()
+        messages = results["messages"]
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
