@@ -16,6 +16,7 @@ def main():
         # Call the Gmail API
         service = build("gmail", "v1", credentials=email_creds)
         parser = EmailParser.EmailParser(service)
+        print(parser.get_first_message())
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
