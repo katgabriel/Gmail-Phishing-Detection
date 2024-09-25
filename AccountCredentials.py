@@ -2,6 +2,8 @@ import os.path
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+
 
 # As of now, no option to add new credentials. May change later (optional constructor argument).
 
@@ -10,7 +12,7 @@ class AccountCredentials:
 
     def __init__(self):
         self.SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
-        creds_json = "client_secret_313735155260-6sa3hnh9ho2d74d9eg2a047okddfsid7.apps.googleusercontent.com.json"
+        creds_json = "client_credentials.json"
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.

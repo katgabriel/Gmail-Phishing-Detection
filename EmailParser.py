@@ -23,7 +23,7 @@ class EmailParser:
         else:
             self.unfiltered_messages.append(message)
 
-    # As of now, filtering the body of the email
+    # As of now, filtering the body of the email. May split this into two methods later
     def __filter_messages(self):
         for message in self.unfiltered_messages:
             decoded_message = {}
