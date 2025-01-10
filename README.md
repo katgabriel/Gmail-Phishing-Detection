@@ -1,5 +1,4 @@
-# Spear Fishing Project
+# Gmail Phishing Detection
 
-Using Google's Gmail API, this project aims to scan a user's Gmail inbox and detect potential phishing emails using Python. This project is still under development.
+I started this project to experiment with using Google Cloud and Google's Gmail API to analyze email hyperlinks and detect potential phishing emails. I initially developed with Python, but upon considering my long-term goals for this project, I have decided to turn it into the beginnings of a chrome extension. I therefore am transitioning to JavaScript with the goal of developing an extension that, upon download, will alert Gmail users to suspicious emails. 
 
-The next steps for this project include filtering out hyperlinks using regular expressions, as well as analyzing these links using tools such as Python's whois module.
