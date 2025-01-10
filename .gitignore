@@ -1,2 +1,4 @@
-practice.html
-practice.js
+node_modules/
+.env
+config/
+tokens.json

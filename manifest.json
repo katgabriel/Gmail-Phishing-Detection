@@ -2,5 +2,13 @@
   "manifest_version": 3,
   "name": "Gmail Phishing Detection",
   "version": "0.1",
-  "description": "A chrome extension designed to scan a user's Gmail inbox for potential phishing emails"
+  "description": "A chrome extension designed to scan a user's Gmail inbox for potential phishing emails",
+  "permissions": [
+
+  ],
+  "background": {
+    "scripts": [
+      "app.js"
+    ]
+  }
 }
