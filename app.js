@@ -1,7 +1,7 @@
 /**
  * @fileOverview Script that handles Google OAuth2 Authentication
  *
- * @author Permify https://permify.co/post/oauth-20-implementation-nodejs-expressjs/
+ * @reference Permify https://permify.co/post/oauth-20-implementation-nodejs-expressjs/
  */
 
 import * as dotenv from "dotenv";
@@ -27,16 +27,15 @@ const {
     PORT
 } = process.env
 
-// creating state token to prevent request forgery
-const state = crypto.randomBytes(16).toString("hex");
-
 // listens for requests made to root path of server and redirects to Google OAuth2 consent screen
 app.get("/", async (req, res) => {
+    // creating state token to prevent request forgery
+    const state = crypto.randomBytes(32).toString("hex");
     const GOOGLE_OAUTH_CONSENT_SCREEN_URL = `${GOOGLE_OAUTH_URL}?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_CALLBACK_URL}&access_type=offline&response_type=code&state=${state}&scope=${GOOGLE_OAUTH_SCOPE}`;
     res.redirect(GOOGLE_OAUTH_CONSENT_SCREEN_URL);
 });
 
-app.get("/google/callback", async (req, res) => {
+app.get("/oauth2callback", async (req, res) => {
     const { code } = req.query;
     const data = {
         code,
@@ -48,23 +47,42 @@ app.get("/google/callback", async (req, res) => {
     // exchange authorization code for access token & id_token
     const response = await fetch(GOOGLE_ACCESS_TOKEN_URL, {
         method: "POST",
-        body: JSON.stringify(data),
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams(data).toString(),
     });
-    const access_token_data = await response.json();
 
-    const { id_token } = access_token_data;
+    if (!response.ok) {
+        console.error("Failed to exchange authorization code", await response.text());
+        return res.status(500).json({error: "Failed to fetch token"});
+    }
+
+    const access_token_data = await response.json();
+    const {access_token} = access_token_data;
+
+    if (!access_token) {
+        console.error("ID token is missing", access_token_data);
+        return res.status(400).json({error: "ID token is missing"});
+    }
 
     // verifying and extracting the info in the id token
     const token_info_response = await fetch(
-        `${GOOGLE_TOKEN_INFO_URL}?
-        id_token=${id_token}`
+        `${GOOGLE_TOKEN_INFO_URL}?access_token=${access_token}`
     );
+
+    console.log("Token info response:", token_info_response);
+
+    if (!token_info_response.ok) {
+        console.error("Failed to verify token", await token_info_response.text());
+    }
+
     res.status(token_info_response.status).json(await token_info_response.json());
-    // fs.writeFile('tokens.json', id_token, err => {
-    //     if (err) {
-    //         console.error(err);
-    //     }
-    // });
+    fs.writeFile('tokens.json', access_token, err => {
+        if (err) {
+            console.error(err);
+        }
+    });
 });
 
 // starts the server on port 8000
