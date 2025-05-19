@@ -11,9 +11,11 @@ import express from "express";
 import fetch from "node-fetch";
 import crypto from "crypto";
 import fs from "fs";
+import cors from "cors";
 
 const app = express(); // creating the Express app
 app.use(express.json());
+app.use(cors()); // add origin later
 
 // loading environment variables from .env
 const {

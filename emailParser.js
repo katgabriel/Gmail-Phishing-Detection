@@ -1,10 +1,13 @@
-import fs from "fs";
+chrome.runtime.onInstalled.addListener(() => {
+    console.log("Service worker activated")
+})
 
 let token;
 
 async function checkForToken() {
     try {
         const res = await fetch("http://localhost:8000/token");
+        console.log(res);
         const data = await res.json();
         if (data.token) {
             console.log("Received token:", data.token);
