@@ -3,12 +3,8 @@
   "name": "Gmail Phishing Detection",
   "version": "0.1",
   "description": "A chrome extension designed to scan a user's Gmail inbox for potential phishing emails",
-  "permissions": [
-
-  ],
+  "permissions": ["runtime"],
   "background": {
-    "scripts": [
-      "app.js"
-    ]
+    "service_worker": "emailParser.js"
   }
 }

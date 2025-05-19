@@ -71,7 +71,7 @@ app.get("/oauth2callback", async (req, res) => {
         `${GOOGLE_TOKEN_INFO_URL}?access_token=${access_token}`
     );
 
-    console.log("Token info response:", token_info_response);
+    // console.log("Token info response:", token_info_response);
 
     if (!token_info_response.ok) {
         console.error("Failed to verify token", await token_info_response.text());
