@@ -13,6 +13,8 @@ import crypto from "crypto";
 import fs from "fs";
 import cors from "cors";
 
+let accessToken = null;
+
 const app = express(); // creating the Express app
 app.use(express.json());
 app.use(cors()); // add origin later
@@ -61,7 +63,11 @@ app.get("/oauth2callback", async (req, res) => {
     }
 
     const access_token_data = await response.json();
-    const {access_token} = access_token_data;
+    //const {access_token} = access_token_data;
+
+    // accessToken = access_token;
+    //console.log(accessToken);
+    const {access_token, refresh_token, expires_in} = access_token_data;
 
     if (!access_token) {
         console.error("ID token is missing", access_token_data);
@@ -73,17 +79,55 @@ app.get("/oauth2callback", async (req, res) => {
         `${GOOGLE_TOKEN_INFO_URL}?access_token=${access_token}`
     );
 
-    // console.log("Token info response:", token_info_response);
-
     if (!token_info_response.ok) {
         console.error("Failed to verify token", await token_info_response.text());
     }
 
-    res.status(token_info_response.status).json(await token_info_response.json());
-    fs.writeFile('tokens.json', access_token, err => {
+    fs.writeFile('tokens.json', JSON.stringify({access_token, refresh_token, expires_at: Date.now() + + expires_in*1000}), err => {
         if (err) {
             console.error(err);
         }
+    });
+
+    res.status(200).json({message: "Authorization successful", access_token});
+});
+
+app.get("/token", (req, res) => {
+    fs.readFile('tokens.json', 'utf-8', async (err, data) => {
+        if (err || !data) {
+            return res.status(404).json({ error: "No token available yet" });
+        }
+        const {access_token, refresh_token, expires_at} = JSON.parse(data);
+        if (Date.now() > expires_at) {
+            const response = await fetch(GOOGLE_ACCESS_TOKEN_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: new URLSearchParams({
+                    client_id: GOOGLE_CLIENT_ID,
+                    client_secret: GOOGLE_CLIENT_SECRET,
+                    refresh_token: refresh_token,
+                    grant_type: "refresh-token"
+                })
+            });
+            if (!response.ok) {
+                return res.status(500).json({error: "Failed to refresh token"});
+            }
+            const newToken = await response.json();
+            const updated = {
+                access_token: newToken.accessToken,
+                refresh_token,
+                expires_at: Date.now() + newToken.expires_in * 1000
+            };
+            fs.writeFile('tokens.json', JSON.stringify(updated), err => {
+                if (err) {
+                    console.error(err);
+                }
+            });
+            return res.json({token: updated.access_token});
+        }
+        res.json({token: access_token});
     });
 });
 
