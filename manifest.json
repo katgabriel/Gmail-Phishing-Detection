@@ -4,11 +4,14 @@
   "version": "0.1",
   "description": "A chrome extension designed to scan a user's Gmail inbox for potential phishing emails",
   "permissions": [
-    "runtime",
-    "storage"
+  ],
+  "host_permissions": [
+    "https://gmail.googleapis.com/",
+    "http://localhost:8000/"
   ],
   "background": {
-    "service_worker": "emailParser.js"
+    "service_worker": "emailParser.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "index.html"
