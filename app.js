@@ -27,8 +27,8 @@ const {
     GOOGLE_CALLBACK_URL,
     GOOGLE_OAUTH_SCOPE,
     GOOGLE_ACCESS_TOKEN_URL,
-    GOOGLE_TOKEN_INFO_URL,
-    PORT
+    PORT,
+    API_KEY
 } = process.env
 
 // listens for requests made to root path of server and redirects to Google OAuth2 consent screen
@@ -75,6 +75,8 @@ app.get("/oauth2callback", async (req, res) => {
         access_token,
         refresh_token,
         expires_at: Date.now() + expires_in*1000
+        // apiKey: API_KEY,
+        // clientId: GOOGLE_CLIENT_ID
     };
 
     fs.writeFile('tokens.json', JSON.stringify(tokenObject), err => {
@@ -124,6 +126,8 @@ app.get("/token", async (req, res) => {
                 access_token: newAccessToken,
                 refresh_token,
                 expires_at: newExpiresAt
+                // apiKey: API_KEY,
+                // clientId: GOOGLE_CLIENT_ID
             };
             fs.writeFile('tokens.json', JSON.stringify(updated), err => {
                 if (err) {
@@ -135,53 +139,6 @@ app.get("/token", async (req, res) => {
         res.json({ token: access_token });
     });
 });
-
-// app.get("/token", async (req, res) => {
-//     try {
-//         const data = await fs.readFile("tokens.json", "utf-8");
-//         const { access_token, refresh_token, expires_at } = JSON.parse(data);
-//         if (access_token && Date.now() < expires_at) {
-//             return res.json({ token: access_token });
-//         }
-//         const response = await fetch("https://oauth2.googleapis.com/token", {
-//             method: "POST",
-//             headers: {
-//                 "Content-Type": "application/x-www-form-urlencoded"
-//             },
-//             body: new URLSearchParams({
-//                 client_id: process.env.GOOGLE_CLIENT_ID,
-//                 client_secret: process.env.GOOGLE_CLIENT_SECRET,
-//                 refresh_token,
-//                 grant_type: "refresh_token"
-//             })
-//         });
-//
-//         if (!response.ok) {
-//             console.error("Failed to refresh token");
-//             return res.status(500).json({ error: "Failed to refresh token" });
-//         }
-//
-//         const newToken = await response.json();
-//
-//         const updated = {
-//             access_token: newToken.access_token,
-//             refresh_token,
-//             expires_at: Date.now() + newToken.expires_in * 1000
-//         };
-//
-//         await fs.writeFile("tokens.json", JSON.stringify(updated, null, 2), err => {
-//             if (err) {
-//                 console.log("Error writing refreshed token:", err)
-//             }
-//         });
-//         return res.json({ token: updated.access_token });
-//
-//     } catch (err) {
-//         console.error("Token retrieval failed:", err);
-//         res.status(500).json({ error: "Internal error retrieving token" });
-//     }
-// });
-
 
 // starts the server on port 8000
 app.listen(PORT || 3000, () => {
