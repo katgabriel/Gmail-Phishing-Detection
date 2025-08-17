@@ -1,11 +1,13 @@
 // may have to request increased quotas, or register a watch with Gmail API or receive a webhook when new message arrives
 
+import PostalMime from 'postal-mime';
 
 /*
 * Using getAccessToken method from tokenManager.js to keep confidential information secure
 * */
 import {getAccessToken} from "./tokenManager.js";
-// import {TBD} from "./malwareAnalysis.js";
+// import {TBD} from "./linkAnalysis.js";
+// import {TBD} from "./attachmentAnalysis.js";
 
 chrome.runtime.onInstalled.addListener(async () => {
     console.log("Service worker installed");
@@ -25,9 +27,10 @@ async function analyzeEmails() {
     });
     const data = await res.json();
     console.log(data);
-    await parseEmails(token, data);
-    if (!firstRun) {
+    if (firstRun) {
         const emails = await parseEmails(token, data);
+        //const emailsWithHyperlinks = await parseHyperlinks(emails);
+        firstRun = false;
     } else {
         // create listener, scan new, incoming emails
     }
@@ -127,41 +130,69 @@ async function parseEmails(token, data) {
     }
 
     const parsed = [];
-    emails.forEach((email) => {
+    const parser = new PostalMime();
+    for (const email of emails) {
         if (!email || !email.id || !email.payload) {
             console.warn("Skipping malformed or missing payload email:", email);
-            return;
+            continue;
         }
-        const emailObject = {
-            id: email.id,
-            from: null,
-            parts: []
-        };
-        const headers = email.payload.headers || [];
-        headers.forEach((header) => {
-            if (header.name === "From") {
-                emailObject.from = header.value;
-            }
-        });
-        if (email.payload.parts) {
-            email.payload.parts.forEach((part) => {
-                if (part?.body?.data) {
-                    emailObject.parts.push({
-                        partId: part.partId,
-                        data: atob(part.body.data.replace(/-/g, '+').replace(/_/g, '/'))
-                    });
-                }
-            });
-        } else if (email.payload.body?.data) {
-            emailObject.parts.push({
-                partId: email.payload.partId || "0",
-                data: atob(email.payload.body.data.replace(/-/g, '+').replace(/_/g, '/'))
-            });
-        }
-        parsed.push(emailObject);
-    });
+        // const emailObject = {
+        //     id: email.id,
+        //     from: null,
+        //     parts: []
+        // };
+        //
+
+        const parsedEmail = await parser.parse(email);
+
+        parsed.push(parsedEmail);
+
+        // const headers = email.payload.headers || [];
+        // headers.forEach((header) => {
+        //     if (header.name === "From") {
+        //         emailObject.from = header.value;
+        //     }
+        // });
+        // if (email.payload.parts) {
+        //     email.payload.parts.forEach((part) => {
+        //         if (part?.body?.data) {
+        //             emailObject.parts.push({
+        //                 partId: part.partId,
+        //                 data: atob(part.body.data.replace(/-/g, '+').replace(/_/g, '/'))
+        //             });
+        //         }
+        //     });
+        // } else if (email.payload.body?.data) {
+        //     emailObject.parts.push({
+        //         partId: email.payload.partId || "0",
+        //         data: atob(email.payload.body.data.replace(/-/g, '+').replace(/_/g, '/'))
+        //     });
+        // }
+        // parsed.push(emailObject);
+    }
 
 
     console.log("Parsed Emails:", parsed);
     return parsed;
 }
+
+async function parseHyperlinks(emails) {
+    let count = 1;
+    emails.forEach((email) => {
+        console.log(`================ Email ${count} ================\n`);
+        for (let i = 0; i < email.parts?.length; i++) {
+            console.log(`Part ${i}:\n`, email.parts[i].data);
+        }
+        count++;
+    })
+}
+
+
+/*
+(https://website.com/subset/)
+if data.contains("!DOCTYPE html"):
+    "http://www.website.com/..."
+    - note that there is "http-equiv" as well, so have to make sure that's not included
+
+ might only have to look through html version (if available), if so look for src="http..."?
+ */

@@ -2,10 +2,10 @@
   "name": "spear-phishing-project",
   "version": "1.0.0",
   "description": "Using Google's Gmail API, this project aims to scan a user's Gmail inbox and detect potential phishing emails. This project is still under development.",
-  "main": "app.js",
+  "main": "routes/authRoutes.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
+    "start": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
@@ -18,10 +18,13 @@
     "express": "^4.21.2",
     "gapi": "^0.0.3",
     "google-auth-library": "^9.15.0",
+    "googleapis": "^155.0.1",
     "jsonwebtoken": "^9.0.2",
+    "mailparser": "^3.7.4",
     "mongoose": "^8.9.3",
     "node-fetch": "^3.3.2",
-    "open": "^10.1.2"
+    "open": "^10.1.2",
+    "postal-mime": "^2.4.4"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
